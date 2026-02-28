@@ -7,9 +7,10 @@ module Mutations
       field :errors, [String], null: false
 
       def resolve(ticket_id:)
-        require_agent!
+        # require_agent!
         ticket = Ticket.find(ticket_id)
-        if ticket.update(closed_at: Time.current)
+        
+        if ticket.close!
           { ticket: ticket, errors: [] }
         else
           { ticket: nil, errors: ticket.errors.full_messages }

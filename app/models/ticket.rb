@@ -9,16 +9,25 @@ class Ticket < ApplicationRecord
   validates :description, presence: true
   validate :attachments_content_type
   validate :creator_must_be_customer, on: :create
+  validate :assigned_must_be_agent
 
   scope :recently_closed, -> { where.not(closed_at: nil).where("closed_at >= ?", 1.month.ago) }
   scope :open_tickets, -> { where(closed_at: nil) }
 
   def close!
+    return true if closed?
+    
     update(closed_at: Time.current)
   end
 
   def closed?
     closed_at.present?
+  end
+
+  def status
+    return "pending" if agent.present? && closed_at.nil?
+
+    closed? ? "closed" : "open"
   end
 
   private
@@ -27,6 +36,12 @@ class Ticket < ApplicationRecord
     if customer && !customer.customer?
       errors.add(:customer, "must be a customer")
     end
+  end
+
+  def assigned_must_be_agent
+    return if agent.nil?
+
+    errors.add(:agent, "must be an agent") if !agent.agent?
   end
 
   def attachments_content_type

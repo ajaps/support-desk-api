@@ -34,6 +34,9 @@ begin
 rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
+
+Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
+
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
@@ -45,6 +48,11 @@ RSpec.configure do |config|
   # instead of true.
   config.use_transactional_fixtures = true
 
+  config.include FactoryBot::Syntax::Methods
+  config.include GraphqlHelpers, type: :request
+  config.use_transactional_fixtures = true
+  config.infer_spec_type_from_file_location!
+  
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
 
@@ -65,10 +73,25 @@ RSpec.configure do |config|
   # To enable this behaviour uncomment the line below.
   # config.infer_spec_type_from_file_location!
 
+  config.include ActiveSupport::Testing::TimeHelpers
+
   config.include FactoryBot::Syntax::Methods
 
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+end
+
+require "simplecov"
+SimpleCov.start "rails" do
+  add_filter "/spec/"
+  minimum_coverage 90
+end
+
+Shoulda::Matchers.configure do |config|
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
 end

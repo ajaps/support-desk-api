@@ -33,8 +33,12 @@ module Types
               else
                 context[:current_user].tickets_as_customer
               end
-
-      scope = scope.where(status: status) if status.present?
+      if status&.include?("open")
+        scope = scope.where(closed_at: nil)
+      elsif status&.include?("closed")
+        scope = scope.where.not(closed_at: nil)
+      end
+      
       scope.order(created_at: :desc)
     end
 

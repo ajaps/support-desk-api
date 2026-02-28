@@ -9,12 +9,22 @@ module Mutations
 
     private
 
+    # def ready?(**args)
+    #   raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
+    #   true
+    # end
+
+    def authorized?(**args)
+      raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
+      true
+    end
+
     def current_user
       context[:current_user] || raise(GraphQL::ExecutionError, "Not authenticated")
     end
 
     def require_agent!
-      raise GraphQL::ExecutionError, "Agents only" unless current_user.agent?
+      raise GraphQL::ExecutionError, "not authorized" unless current_user.agent?
     end
   end
 end
