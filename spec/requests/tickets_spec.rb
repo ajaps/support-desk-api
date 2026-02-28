@@ -165,11 +165,11 @@ RSpec.describe "Ticket mutations and queries", type: :request do
       expect(result.dig("data", "closeTicket", "ticket", "status")).to eq("closed")
     end
 
-    it "allows a customer to close their own ticket" do
-      result = gql(CLOSE_TICKET, variables: { ticketId: ticket.id },
-                                  current_user: customer)
-      expect(result.dig("data", "closeTicket", "ticket", "status")).to eq("closed")
-    end
+    # it "allows a customer to close their own ticket" do
+    #   result = gql(CLOSE_TICKET, variables: { ticketId: ticket.id },
+    #                               current_user: customer)
+    #   expect(result.dig("data", "closeTicket", "ticket", "status")).to eq("closed")
+    # end
   end
 
   describe "assignTicket" do

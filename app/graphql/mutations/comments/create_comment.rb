@@ -9,6 +9,7 @@ module Mutations
 
       def resolve(ticket_id:, body:)
         ticket = Ticket.find(ticket_id)
+        authorize! comment, :create?
 
         # Customers may only comment on their own tickets
         if current_user.customer? && ticket.customer_id != current_user.id
