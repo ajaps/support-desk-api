@@ -52,7 +52,7 @@ RSpec.configure do |config|
   config.include GraphqlHelpers, type: :request
   config.use_transactional_fixtures = true
   config.infer_spec_type_from_file_location!
-  
+
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
 

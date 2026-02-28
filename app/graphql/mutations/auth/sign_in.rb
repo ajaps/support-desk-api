@@ -6,7 +6,7 @@ module Mutations
 
       field :token,  String,          null: true
       field :user,   Types::UserType, null: true
-      field :errors, [String],        null: false
+      field :errors, [ String ],        null: false
 
       def resolve(email:, password:)
         user = User.find_by(email: email.downcase.strip)
@@ -14,8 +14,14 @@ module Mutations
         if user&.authenticate(password)   # has_secure_password method
           { token: TokenService.encode(user), user: user, errors: [] }
         else
-          { token: nil, user: nil, errors: ["Invalid email or password"] }
+          { token: nil, user: nil, errors: [ "Invalid email or password" ] }
         end
+      end
+
+      private
+
+      def public_mutation?
+        true
       end
     end
   end

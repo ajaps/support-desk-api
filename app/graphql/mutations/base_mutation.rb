@@ -7,16 +7,17 @@ module Mutations
     input_object_class Types::BaseInputObject
     object_class Types::BaseObject
 
-    private
+    def ready?(**args)
+      return true if public_mutation?
 
-    # def ready?(**args)
-    #   raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
-    #   true
-    # end
-
-    def authorized?(**args)
       raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
       true
+    end
+
+    private
+
+    def public_mutation?
+      false
     end
 
     def current_user

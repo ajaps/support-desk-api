@@ -5,7 +5,7 @@ module Mutations
       argument :body,      String, required: true
 
       field :comment, Types::CommentType, null: true
-      field :errors,  [String], null: false
+      field :errors,  [ String ], null: false
 
       def resolve(ticket_id:, body:)
         ticket = Ticket.find(ticket_id)

@@ -16,7 +16,7 @@ class Ticket < ApplicationRecord
 
   def close!
     return true if closed?
-    
+
     update(closed_at: Time.current)
   end
 

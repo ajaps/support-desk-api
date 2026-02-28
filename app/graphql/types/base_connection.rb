@@ -7,7 +7,7 @@ module Types
     # add `nodes` and `pageInfo` fields, as well as `edge_type(...)` and `node_nullable(...)` overrides
     include GraphQL::Types::Relay::ConnectionBehaviors
 
-    def total_count  
+    def total_count
       object.items.size
     end
   end

@@ -21,7 +21,7 @@ module Types
     # Add root-level fields here.
     # They will be entry points for queries on your schema.
 
-    field :tickets, [TicketType], null: false do
+    field :tickets, Types::TicketType.connection_type, null: false do
       argument :status, String, required: false
     end
 
@@ -30,15 +30,15 @@ module Types
 
       scope = if context[:current_user].agent?
                 Ticket.all
-              else
+      else
                 context[:current_user].tickets_as_customer
-              end
+      end
       if status&.include?("open")
         scope = scope.where(closed_at: nil)
       elsif status&.include?("closed")
         scope = scope.where.not(closed_at: nil)
       end
-      
+
       scope.order(created_at: :desc)
     end
 

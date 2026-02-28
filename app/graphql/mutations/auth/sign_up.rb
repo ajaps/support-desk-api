@@ -8,7 +8,7 @@ module Mutations
 
       field :token,  String,          null: true
       field :user,   Types::UserType, null: true
-      field :errors, [String],        null: false
+      field :errors, [ String ],        null: false
 
       def resolve(name:, email:, password:, role:)
         user = User.new(name: name, email: email, password: password, role: role)
@@ -17,6 +17,12 @@ module Mutations
         else
           { token: nil, user: nil, errors: user.errors.full_messages }
         end
+      end
+
+      private
+
+      def public_mutation?
+        true
       end
     end
   end

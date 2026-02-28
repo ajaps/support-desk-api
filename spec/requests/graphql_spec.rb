@@ -30,6 +30,7 @@ RSpec.describe "GraphQL API", type: :request do
       result = gql(mutation, variables: {
         name: "Alice", email: "alice@test.com", password: "Password1!"
       })
+
       expect(result.dig("data", "signUp", "token")).to be_present
       expect(result.dig("data", "signUp", "errors")).to be_empty
     end
@@ -68,20 +69,20 @@ RSpec.describe "GraphQL API", type: :request do
   end
 
   describe "tickets query" do
-    let(:query) { "{ tickets { id createdAt } }" }
+    let(:query) { "{ tickets { totalCount nodes { id createdAt } } }" }
 
     it "returns only the customer's own tickets" do
       create(:ticket, customer: customer)
       create(:ticket)   # belongs to another customer
 
       result = gql(query, user: customer)
-      expect(result.dig("data", "tickets").size).to eq(1)
+      expect(result.dig("data", "tickets", "totalCount")).to eq(1)
     end
 
     it "returns all tickets for an agent" do
       create_list(:ticket, 3)
       result = gql(query, user: agent)
-      expect(result.dig("data", "tickets").size).to eq(3)
+      expect(result.dig("data", "tickets", "totalCount")).to eq(3)
     end
   end
 

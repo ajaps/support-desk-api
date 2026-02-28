@@ -92,7 +92,6 @@ RSpec.describe "Ticket mutations and queries", type: :request do
     it "filters by status" do
       create(:ticket, :closed, customer: customer)
       result = gql(GET_TICKETS, variables: { status: "open" }, current_user: customer)
-      debugger
       statuses = result.dig("data", "tickets", "edges").map { |e| e.dig("node", "status") }
       expect(statuses).to all(eq("open"))
     end

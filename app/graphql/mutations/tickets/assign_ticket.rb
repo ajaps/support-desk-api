@@ -4,7 +4,7 @@ module Mutations
       argument :ticket_id, ID, required: true
 
       field :ticket, Types::TicketType, null: true
-      field :errors, [String], null: false
+      field :errors, [ String ], null: false
 
       def resolve(ticket_id:)
         require_agent!
