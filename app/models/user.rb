@@ -12,4 +12,8 @@ class User < ApplicationRecord
   validates :password, length: { minimum: 8 }, if: -> { new_record? || password.present? }
 
   before_save { email.downcase! }
+
+  def tickets_as_customer
+    Ticket.where(customer_id: id)
+  end
 end
