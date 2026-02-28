@@ -42,6 +42,7 @@ gem "graphql"
 gem "graphql-rails_logger", group: :development
 
 gem "active_storage_validations"
+gem "pundit", "~> 2.3"
 
 gem "sidekiq"
 gem "sidekiq-scheduler"
@@ -58,7 +59,7 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
-  gem 'shoulda-matchers', '~> 5.0'
+  gem "shoulda-matchers", "~> 5.0"
 end
 
 group :test do

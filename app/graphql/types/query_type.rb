@@ -2,6 +2,8 @@
 
 module Types
   class QueryType < Types::BaseObject
+    include Pundit::Authorization
+
     field :node, Types::NodeType, null: true, description: "Fetches an object given its ID." do
       argument :id, ID, required: true, description: "ID of the object."
     end
@@ -28,21 +30,16 @@ module Types
     def tickets(status: nil)
       raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
 
-      scope = if context[:current_user].agent?
-                Ticket.all
-      else
-                context[:current_user].tickets_as_customer
-      end
-      if status&.include?("open")
+      scope = Pundit.policy_scope!(context[:current_user], Ticket)
+      if status&.downcase&.include?("open")
         scope = scope.where(closed_at: nil)
-      elsif status&.include?("closed")
+      elsif status&.downcase&.include?("close")
         scope = scope.where.not(closed_at: nil)
       end
 
       scope.order(created_at: :desc)
     end
 
-    # Single ticket
     field :ticket, TicketType, null: true do
       argument :id, ID, required: true
     end
@@ -50,14 +47,11 @@ module Types
     def ticket(id:)
       raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
 
-      ticket = Ticket.find_by(id: id)
-      return nil unless ticket
+      ticket = Pundit.policy_scope!(context[:current_user], Ticket).find_by(id: id)
 
-      user = context[:current_user]
-      return ticket if user.agent?
-      return ticket if ticket.customer_id == user.id
+      raise GraphQL::ExecutionError, "Not found or not authorized" unless ticket
 
-      raise GraphQL::ExecutionError, "Not authorized"
+      ticket
     end
 
     # Current user

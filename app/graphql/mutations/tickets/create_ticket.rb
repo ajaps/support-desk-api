@@ -11,6 +11,8 @@ module Mutations
         raise GraphQL::ExecutionError, "Customers only" unless current_user.customer?
 
         ticket = current_user.tickets_as_customer.build(title: title, description: description)
+        authorize! ticket, :create?
+
         if ticket.save
           { ticket: ticket, errors: [] }
         else

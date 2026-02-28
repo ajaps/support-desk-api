@@ -2,6 +2,8 @@
 
 module Mutations
   class BaseMutation < GraphQL::Schema::RelayClassicMutation
+    include Pundit::Authorization
+
     argument_class Types::BaseArgument
     field_class Types::BaseField
     input_object_class Types::BaseInputObject
@@ -12,6 +14,19 @@ module Mutations
 
       raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
       true
+    end
+
+    def authorize!(record, query)
+      # super(current_user, record, query: query)
+      authorize(record, query)
+    rescue Pundit::NotAuthorizedError => e
+      raise GraphQL::ExecutionError, "Not authorized: #{e.message}"
+    end
+
+    def policy_scope(scope)
+      super(current_user, scope)
+    rescue Pundit::NotAuthorizedError => e
+      raise GraphQL::ExecutionError, "Not authorized: #{e.message}"
     end
 
     private

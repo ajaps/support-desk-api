@@ -9,6 +9,8 @@ module Mutations
       def resolve(ticket_id:)
         require_agent!
         ticket = Ticket.find(ticket_id)
+        authorize! ticket, :update?
+
         if ticket.update(agent: current_user)
           { ticket: ticket, errors: [] }
         else
