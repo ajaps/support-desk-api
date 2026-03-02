@@ -3,7 +3,6 @@ FactoryBot.define do
     association :agent, factory: [ :user, :agent ]
     status { 1 }
     export_type { "closed_tickets" }
-    exported_at { Time.current }
     error_message { nil }
 
     trait :with_file do

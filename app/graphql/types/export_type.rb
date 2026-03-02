@@ -6,7 +6,7 @@ module Types
     field :id,          ID,          null: false
     field :status,       String,      null: false
     field :export_type, String,      null: false
-    field :exported_at,    GraphQL::Types::ISO8601DateTime,    null: false
+    field :created_at,    GraphQL::Types::ISO8601DateTime,    null: false
     field :agent,           UserType,    null: true
     field :download_url,    String,      null: true
 

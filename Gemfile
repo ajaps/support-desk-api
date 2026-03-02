@@ -45,6 +45,8 @@ gem "graphql-rails_logger", group: :development
 gem "active_storage_validations"
 gem "pundit", "~> 2.3"
 
+gem "csv"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
@@ -60,7 +62,10 @@ group :development, :test do
   gem "shoulda-matchers", "~> 5.0"
 end
 
-gem "bullet", group: "development"
+group :development do
+  gem "letter_opener"
+  gem "bullet"
+end
 
 group :test do
   gem "rspec-rails"
