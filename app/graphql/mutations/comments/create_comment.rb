@@ -9,12 +9,12 @@ module Mutations
 
       def resolve(ticket_id:, body:)
         ticket = Ticket.find(ticket_id)
-        authorize! comment, :create?
+        authorize! ticket, :add_comment?
 
-        # Customers may only comment on their own tickets
-        if current_user.customer? && ticket.customer_id != current_user.id
-          raise GraphQL::ExecutionError, "Not authorized"
-        end
+        # # Customers may only comment on their own tickets
+        # if current_user.customer? && ticket.customer_id != current_user.id
+        #   raise GraphQL::ExecutionError, "Not authorized"
+        # end
 
         comment = ticket.comments.build(user: current_user, body: body)
         if comment.save

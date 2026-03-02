@@ -178,10 +178,10 @@ RSpec.describe "Ticket mutations and queries", type: :request do
     include_examples "requires authentication", ASSIGN_TICKET, variables: { ticketId: 0 }
     include_examples "agent only", ASSIGN_TICKET, variables: { ticketId: 0 }
 
-    it "assigns the ticket to the calling agent and sets status to in_progress" do
+    it "assigns the ticket to the calling agent and sets status to open" do
       result = gql(ASSIGN_TICKET, variables: { ticketId: ticket.id }, current_user: agent)
       node = result.dig("data", "assignTicket", "ticket")
-      expect(node["status"]).to eq("pending")
+      expect(node["status"]).to eq("open")
       expect(node.dig("agent", "name")).to eq(agent.name)
     end
   end

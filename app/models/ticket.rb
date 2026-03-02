@@ -3,13 +3,16 @@ class Ticket < ApplicationRecord
   belongs_to :agent,    class_name: "User", optional: true
 
   has_many :comments, dependent: :destroy
-  has_many_attached :attachments
+  has_one_attached :file
 
   validates :title, presence: true, length: { maximum: 255 }
   validates :description, presence: true
-  validate :attachments_content_type
   validate :creator_must_be_customer, on: :create
+  validate :file_content_type
   validate :assigned_must_be_agent
+  validates :file, attached: false, if: -> { file.attached? }
+  validates :file, content_type: [ "image/png", "image/jpeg", "application/pdf" ], if: -> { file.attached? }
+  validates :file, size: { less_than: 4.megabytes }, if: -> { file.attached? }
 
   scope :recently_closed, -> { where.not(closed_at: nil).where("closed_at >= ?", 1.month.ago) }
   scope :open_tickets, -> { where(closed_at: nil) }
@@ -25,9 +28,13 @@ class Ticket < ApplicationRecord
   end
 
   def status
-    return "pending" if agent.present? && closed_at.nil?
+    # return "pending" if agent.present? && closed_at.nil?
 
     closed? ? "closed" : "open"
+  end
+
+  def agent_comments
+    comments.joins(:user).where(users: { role: "agent" })
   end
 
   private
@@ -44,11 +51,11 @@ class Ticket < ApplicationRecord
     errors.add(:agent, "must be an agent") if !agent.agent?
   end
 
-  def attachments_content_type
-    attachments.each do |attachment|
-      unless attachment.content_type.in?(%w[image/png image/jpeg image/gif application/pdf])
-        errors.add(:attachments, "must be PNG, JPEG, GIF, or PDF")
-      end
+  def file_content_type
+    return unless file.attached?
+
+    unless file.content_type.in?(%w[image/png image/jpeg image/gif application/pdf])
+      errors.add(:file, "must be PNG, JPEG, GIF, or PDF")
     end
   end
 end
