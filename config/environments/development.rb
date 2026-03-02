@@ -32,6 +32,9 @@ Rails.application.configure do
     config.action_controller.perform_caching = false
   end
 
+  config.action_mailer.delivery_method = :letter_opener
+  config.action_mailer.perform_deliveries = true
+
   # Change to :null_store to avoid any caching.
   config.cache_store = :memory_store
 
@@ -45,7 +48,12 @@ Rails.application.configure do
   config.action_mailer.perform_caching = false
 
   # Set localhost to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+  # config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+  config.action_mailer.default_url_options = {
+    host:     "localhost",
+    port:     3000,
+    protocol: "http"
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

@@ -19,6 +19,12 @@ class Export < ApplicationRecord
     file.url(expires_in: 10.minutes)
   end
 
+  def ticket_count
+    return 0 unless ticket_array.present?
+
+    JSON.parse(ticket_array).size
+  end
+
   private
 
   def single_pending_export_per_agent

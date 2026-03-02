@@ -8,12 +8,11 @@ class ExportTicketsJob < ApplicationJob
   def perform(export_id, user_id)
     begin
       export = Export.find(export_id)
-      ticket_ids = export.ticket_array.split(",").map(&:to_i)
+      ticket_ids = export.ticket_array.present? ? JSON.parse(export.ticket_array) : []
       tickets = Ticket.where(id: ticket_ids).includes(:customer, :agent)
       user    = User.find(user_id)
 
       file_content = generate_csv(tickets)
-
 
       export.file.attach(
         io: StringIO.new(file_content),

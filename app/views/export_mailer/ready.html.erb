@@ -3,6 +3,8 @@
 
 <p>Your closed tickets export is ready.</p>
 
+<p> There are <%= @export.ticket_count %> closed tickets in this export. </p>
+
 <p>
   Generated at: <%= @export.created_at.strftime('%Y-%m-%d %H:%M') %><br>
   File: <%= @export.file.filename %>
