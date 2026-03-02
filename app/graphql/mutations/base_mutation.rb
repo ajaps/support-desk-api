@@ -26,7 +26,7 @@ module Mutations
     def policy_scope(scope)
       super(current_user, scope)
     rescue Pundit::NotAuthorizedError => e
-      raise GraphQL::ExecutionError, "Not authorized: #{e.message}"
+      raise GraphQL::ExecutionError, "Not Authorized: #{e.message}"
     end
 
     private
@@ -40,7 +40,7 @@ module Mutations
     end
 
     def require_agent!
-      raise GraphQL::ExecutionError, "not authorized" unless current_user.agent?
+      raise GraphQL::ExecutionError, "Not Authorized, Only Agents are allowed to perform this action" unless current_user.agent?
     end
   end
 end

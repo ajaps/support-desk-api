@@ -1,6 +1,5 @@
 module Types
   class TicketType < BaseObject
-    # Tell graphql-ruby to use our custom connection & edge types
     connection_type_class Types::BaseConnection
     edge_type_class       Types::BaseEdge
 
@@ -10,11 +9,11 @@ module Types
     field :customer,    UserType,    null: false
     field :agent,       UserType,    null: true
     field :comments,    [ CommentType ], null: false
-    field :attachment_urls, [ String ], null: false
     field :created_at,  GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at,  GraphQL::Types::ISO8601DateTime, null: false
     field :closed_at,  GraphQL::Types::ISO8601DateTime, null: true
     field :status,      String,      null: false
+    field :file_url,    String,      null: true
 
     def comments
       object.comments.order(created_at: :asc)
@@ -24,8 +23,13 @@ module Types
       object.status
     end
 
-    def attachment_urls
-      object.attachments.map { |a| Rails.application.routes.url_helpers.rails_blob_url(a) }
+    def file_url
+      return unless object.file.attached?
+
+      Rails.application.routes.url_helpers.rails_blob_url(
+        object.file,
+        expires_in: 10.minutes
+      )
     end
   end
 end

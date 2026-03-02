@@ -42,9 +42,9 @@ RSpec.describe Ticket, type: :model do
   end
 
   describe "attachment validations" do
-    it "allows PNG attachments" do
+    it "allows PNG attachment" do
       ticket = build(:ticket)
-      ticket.attachments.attach(
+      ticket.file.attach(
         io:           StringIO.new("fake"),
         filename:     "image.png",
         content_type: "image/png"
@@ -54,13 +54,13 @@ RSpec.describe Ticket, type: :model do
 
     it "rejects disallowed content types" do
       ticket = build(:ticket)
-      ticket.attachments.attach(
+      ticket.file.attach(
         io:           StringIO.new("fake"),
         filename:     "doc.exe",
         content_type: "application/x-msdownload"
       )
       expect(ticket).not_to be_valid
-      expect(ticket.errors[:attachments]).to be_present
+      expect(ticket.errors[:file]).to be_present
     end
   end
 end
