@@ -1,0 +1,6 @@
+ID,Title,Customer,Agent,Status,CreatedAt,ClosedAt
+101,Login issue,John Doe,Alice Smith,closed,2026-02-20 09:15:00 UTC,2026-02-20 10:02:34 UTC
+102,Payment not processing,Jane Miller,Bob Johnson,open,2026-02-21 14:42:11 UTC,
+103,Account suspended unexpectedly,Michael Brown,Alice Smith,closed,2026-02-22 08:03:55 UTC,2026-02-22 12:47:19 UTC
+104,Feature request: Dark mode,Emily Davis,,open,2026-02-23 16:28:09 UTC,
+105,Error 500 on dashboard,Chris Wilson,Bob Johnson,closed,2026-02-24 11:10:45 UTC,2026-02-24 11:33:02 UTC

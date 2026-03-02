@@ -54,7 +54,19 @@ module Types
       ticket
     end
 
-    # Current user
+    field :exports, Types::ExportType.connection_type, null: false
+
+    def exports
+      raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
+      authorize! Ticket, :can_export?
+
+      tickets = Ticket.recently_closed
+
+      ExportTicketsJob.perform_later(tickets.pluck(:id), context[:current_user].id)
+
+      { message: "Export started. You'll recieve an email when ready.", success: true }
+    end
+
     field :me, UserType, null: true
 
     def me

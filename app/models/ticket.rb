@@ -14,7 +14,7 @@ class Ticket < ApplicationRecord
   validates :file, content_type: [ "image/png", "image/jpeg", "application/pdf" ], if: -> { file.attached? }
   validates :file, size: { less_than: 4.megabytes }, if: -> { file.attached? }
 
-  scope :recently_closed, -> { where.not(closed_at: nil).where("closed_at >= ?", 1.month.ago) }
+  scope :recently_closed, -> { where.not(closed_at: nil).where(closed_at: 1.month.ago.beginning_of_day..Time.current) }
   scope :open_tickets, -> { where(closed_at: nil) }
 
   def close!
