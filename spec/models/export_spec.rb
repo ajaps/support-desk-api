@@ -12,7 +12,6 @@ RSpec.describe Export, type: :model do
     subject { build(:export, agent: agent) }
 
     it { is_expected.to validate_presence_of(:export_type) }
-    it { is_expected.to validate_presence_of(:exported_at) }
     it { is_expected.to validate_presence_of(:status) }
     it { is_expected.to validate_presence_of(:agent) }
 
@@ -22,7 +21,7 @@ RSpec.describe Export, type: :model do
       duplicate = build(:export, :pending, agent: agent)
 
       expect(duplicate).not_to be_valid
-      expect(duplicate.errors[:agent_id]).to include("already has a pending export")
+      expect(duplicate.errors[:base]).to include("Agent already has a pending export")
     end
   end
 

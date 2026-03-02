@@ -4,7 +4,7 @@
 <p>Your closed tickets export is ready.</p>
 
 <p>
-  Generated at: <%= @export.exported_at %><br>
+  Generated at: <%= @export.created_at.strftime('%Y-%m-%d %H:%M') %><br>
   File: <%= @export.file.filename %>
 </p>
 

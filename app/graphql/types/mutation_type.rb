@@ -8,5 +8,6 @@ module Types
     field :close_ticket,         mutation: Mutations::Tickets::CloseTicket
     field :assign_ticket,        mutation: Mutations::Tickets::AssignTicket
     field :create_comment,       mutation: Mutations::Comments::CreateComment
+    field :export_recently_closed_tickets, mutation: Mutations::Tickets::ExportRecentlyClosedTickets
   end
 end

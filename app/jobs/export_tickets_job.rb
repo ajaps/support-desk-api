@@ -3,8 +3,10 @@ class ExportTicketsJob < ApplicationJob
 
   retry_on StandardError, attempts: 3, wait: :polynomially_longer
 
-  def perform(ticket_ids, user_id)
+  def perform(export_id, user_id)
     begin
+      export = Export.find(export_id)
+      ticket_ids = export.ticket_array.split(",").map(&:to_i)
       tickets = Ticket.where(id: ticket_ids).includes(:customer, :agent)
       user    = User.find(user_id)
 
@@ -12,7 +14,7 @@ class ExportTicketsJob < ApplicationJob
 
       filename = "closed_tickets_#{Time.current.strftime('%Y_%m_%d_%H_%M')}.csv"
 
-      export = user.exports.create!(status: "ready", export_type: "closed_tickets")
+      export = user.exports.create!(status: :pending, export_type: "recently_closed_tickets")
       export.file.attach(
         io: StringIO.new(file_content),
         filename: filename,

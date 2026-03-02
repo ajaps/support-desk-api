@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   has_secure_password
+  has_many :exports, foreign_key: "agent_id", dependent: :nullify
 
   enum :role, { customer: 0, agent: 1 }
   # has_many :submitted_tickets, class_name: "Ticket", foreign_key: "customer_id", dependent: :nullify

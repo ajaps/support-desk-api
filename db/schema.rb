@@ -57,10 +57,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_02_120547) do
     t.datetime "created_at", null: false
     t.text "error_message"
     t.string "export_type", null: false
-    t.datetime "exported_at", null: false
+    t.string "filename"
     t.integer "status", default: 0, null: false
+    t.text "ticket_array"
     t.datetime "updated_at", null: false
-    t.index ["agent_id", "created_at"], name: "index_exports_on_agent_id_and_created_at"
+    t.index ["agent_id", "filename"], name: "index_exports_on_agent_id_and_filename_pending_only", unique: true
     t.index ["agent_id"], name: "index_exports_on_agent_id"
   end
 

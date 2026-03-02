@@ -14,7 +14,7 @@ class ExportMailer < ApplicationMailer
 
     mail(
       to: @user.email,
-      subject: "Your closed tickets export is ready - #{export.exported_at}"
+      subject: "Your closed tickets export is ready - #{export.created_at.strftime('%Y-%m-%d %H:%M')}"
     )
   end
 end
