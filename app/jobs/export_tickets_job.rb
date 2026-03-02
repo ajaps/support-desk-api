@@ -1,3 +1,5 @@
+require "csv"
+
 class ExportTicketsJob < ApplicationJob
   queue_as :exports
 
@@ -12,16 +14,15 @@ class ExportTicketsJob < ApplicationJob
 
       file_content = generate_csv(tickets)
 
-      filename = "closed_tickets_#{Time.current.strftime('%Y_%m_%d_%H_%M')}.csv"
 
-      export = user.exports.create!(status: :pending, export_type: "recently_closed_tickets")
       export.file.attach(
         io: StringIO.new(file_content),
-        filename: filename,
+        filename: export.filename,
         content_type: "text/csv"
       )
 
       ExportMailer.ready(user, export).deliver_later
+      export.update(status: :completed)
     rescue => e
       export&.update(status: "failed", error_message: e.message)
       raise

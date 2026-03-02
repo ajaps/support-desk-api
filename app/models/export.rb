@@ -7,6 +7,7 @@ class Export < ApplicationRecord
   validates :agent, presence: true
 
   validate :single_pending_export_per_agent, if: :pending?
+  validate :cannot_download_multiple_exports_within_short_timeframe
 
   scope :recent, -> { order(created_at: :desc) }
 
@@ -27,6 +28,15 @@ class Export < ApplicationRecord
              .where.not(id: id)
              .exists?
       errors.add(:base, "Agent already has a pending export")
+    end
+  end
+
+  def cannot_download_multiple_exports_within_short_timeframe
+    return unless agent_id
+
+    if Export.where(agent_id: agent_id, filename: filename)
+                           .where.not(id: id).exists?
+      errors.add(:base, "You have recently exported tickets. Please wait before exporting again.")
     end
   end
 end
