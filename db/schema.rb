@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_28_103908) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_02_120547) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,6 +52,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_28_103908) do
     t.index ["user_id"], name: "index_comments_on_user_id"
   end
 
+  create_table "exports", force: :cascade do |t|
+    t.bigint "agent_id"
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.string "export_type", null: false
+    t.datetime "exported_at", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["agent_id", "created_at"], name: "index_exports_on_agent_id_and_created_at"
+    t.index ["agent_id"], name: "index_exports_on_agent_id"
+  end
+
   create_table "tickets", force: :cascade do |t|
     t.bigint "agent_id"
     t.datetime "closed_at"
@@ -80,6 +92,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_28_103908) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "comments", "tickets"
   add_foreign_key "comments", "users"
+  add_foreign_key "exports", "users", column: "agent_id"
   add_foreign_key "tickets", "users", column: "agent_id"
   add_foreign_key "tickets", "users", column: "customer_id"
 end

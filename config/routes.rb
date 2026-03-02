@@ -1,5 +1,3 @@
-require "sidekiq/web"
-
 Rails.application.routes.draw do
   post "/graphql", to: "graphql#execute"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -10,8 +8,4 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
-
-  # authenticate :user, lambda { |u| u.admin? } do
-  #   mount Sidekiq::Web => "/sidekiq"
-  # end
 end

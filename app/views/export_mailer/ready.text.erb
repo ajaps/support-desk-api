@@ -1,0 +1,10 @@
+# app/views/export_mailer/ready.text.erb
+Hello <%= @user.name %>,
+
+Your closed tickets export is ready.
+
+Generated at: <%= @export.created_at.strftime("%Y-%m-%d %H:%M") %>
+File: <%= @export.file.filename %>
+
+Download it here:
+<%= @download_url %>

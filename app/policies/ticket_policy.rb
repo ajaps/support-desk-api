@@ -23,4 +23,6 @@ class TicketPolicy < ApplicationPolicy
   def export?  = user.agent?
 
   def add_comment? = user.agent? || (record.agent_comments.exists? && record.customer_id == user.id) && record.closed_at.nil?
+
+  def can_export? = user.agent?
 end

@@ -1,0 +1,4 @@
+daily_ticket_reminder:
+  class: DailyTicketReminderJob
+  schedule: every day at 8am
+  queue: mailers

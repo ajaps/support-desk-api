@@ -1,0 +1,10 @@
+Good morning, <%= @user.first_name %>!
+
+Your daily open tickets report for <%= Date.today.strftime("%B %d, %Y") %> is ready.
+
+Download here:
+<%= @url %>
+
+---
+You're receiving this as a member of the support team.
+Unsubscribe: <%= unsubscribe_notifications_url(token: @user.notification_token) %>

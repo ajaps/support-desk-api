@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body       { font-family: sans-serif; color: #333; max-width: 600px; margin: auto; padding: 24px; }
+      h1         { font-size: 1.1rem; color: #1a1a2e; }
+      .summary   { background: #f4f6ff; border-radius: 8px; padding: 12px 16px; margin: 24px 0; }
+      .btn       { display: inline-block; padding: 12px 24px; background: #4a6cf7; color: #fff;
+                   text-decoration: none; border-radius: 6px; font-weight: bold; margin: 24px 0; }
+      .footer    { margin-top: 32px; font-size: 0.8rem; color: #888; border-top: 1px solid #eee; padding-top: 16px; }
+      a          { color: #4a6cf7; }
+    </style>
+  </head>
+  <body>
+    <h1>👋 Good morning, <%= @user.first_name %>!</h1>
+
+    <div class="summary">
+      Your <strong>daily open tickets report</strong> for
+      <strong><%= Date.today.strftime("%B %d, %Y") %></strong> is ready.
+    </div>
+
+    <p>The attached CSV contains all currently open tickets with customer and agent details.</p>
+
+    <%= link_to "⬇ Download Report", @url, class: "btn" %>
+
+    <div class="footer">
+      You're receiving this as a member of the support team.<br />
+      <%= link_to "Unsubscribe from daily reminders", unsubscribe_notifications_url(token: @user.notification_token) %>
+    </div>
+  </body>
+</html>

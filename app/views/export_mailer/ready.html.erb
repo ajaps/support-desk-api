@@ -1,0 +1,14 @@
+<!-- app/views/export_mailer/ready.html.erb -->
+<p>Hello <%= @user.name %>,</p>
+
+<p>Your closed tickets export is ready.</p>
+
+<p>
+  Generated at: <%= @export.exported_at %><br>
+  File: <%= @export.file.filename %>
+</p>
+
+<p>
+  Download it here:<br>
+  <a href="<%= @download_url %>"><%= @download_url %></a>
+</p>

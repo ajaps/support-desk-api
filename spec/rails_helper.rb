@@ -76,6 +76,12 @@ RSpec.configure do |config|
   config.include ActiveSupport::Testing::TimeHelpers
 
   config.include FactoryBot::Syntax::Methods
+  config.before do
+    ActiveStorage::Current.url_options = {
+      host: "test.host",
+      protocol: "http"
+    }
+  end
 
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
