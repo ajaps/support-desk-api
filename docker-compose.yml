@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: support_desk_api_development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    # db:prepare migrates the primary DB; db:schema:load:queue creates solid_queue tables
+    command: bash -c "bundle exec rails db:prepare && bundle exec rails db:schema:load:queue && bundle exec rails server -b 0.0.0.0"
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgresql://postgres:password@db:5432/support_desk_api_development
+      QUEUE_DATABASE_URL: postgresql://postgres:password@db:5432/support_desk_api_development
+      REDIS_URL: redis://redis:6379/0
+      SOLID_QUEUE_IN_PUMA: "true"
+      FRONTEND_URL: http://localhost:5173
+      APP_HOST: localhost:3000
+      APP_PROTOCOL: http
+      # config/master.key is loaded from the volume mount — no need to set RAILS_MASTER_KEY
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
+  bundle_cache:

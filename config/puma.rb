@@ -35,7 +35,9 @@ port ENV.fetch("PORT", 3000)
 plugin :tmp_restart
 
 # Run the Solid Queue supervisor inside of Puma for single-server deployments.
-plugin :solid_queue
+# Set SOLID_QUEUE_IN_PUMA=true to enable (already set in docker-compose.yml and render.yaml).
+# Omit the env var when running `rails s` locally to avoid needing the queue DB tables set up.
+plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"] == "true"
 
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
 # In other environments, only set the PID file if requested.
