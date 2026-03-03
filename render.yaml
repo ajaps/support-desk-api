@@ -1,0 +1,57 @@
+databases:
+  - name: support-desk-db
+    databaseName: support_desk_api_production
+    user: support_desk_api
+    region: oregon
+    plan: free          # upgrade to starter/standard for production workloads
+
+services:
+  - type: redis
+    name: support-desk-redis
+    region: oregon
+    plan: free          # upgrade for production; free plan has 25MB limit
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+  - type: web
+    name: support-desk-api
+    runtime: docker
+    region: oregon
+    plan: starter       # choose based on expected traffic
+    healthCheckPath: /up
+    envVars:
+      - key: RAILS_ENV
+        value: production
+
+      # Primary database — auto-wired from the Render PostgreSQL above
+      - key: DATABASE_URL
+        fromDatabase:
+          name: support-desk-db
+          property: connectionString
+
+      # SolidQueue uses the same database as primary in this single-server setup.
+      # Point to a separate DB here if you scale out.
+      - key: QUEUE_DATABASE_URL
+        fromDatabase:
+          name: support-desk-db
+          property: connectionString
+
+      # Redis for ActionCable
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: support-desk-redis
+          property: connectionString
+
+      # Set these as secret env vars in the Render dashboard (sync: false = not in repo)
+      - key: RAILS_MASTER_KEY
+        sync: false
+
+      - key: FRONTEND_URL
+        sync: false       # e.g. https://your-frontend.com
+
+      - key: SOLID_QUEUE_IN_PUMA
+        value: "true"
+
+      - key: RAILS_LOG_LEVEL
+        value: info

@@ -32,7 +32,7 @@ Rails.application.configure do
     config.action_controller.perform_caching = false
   end
 
-  config.action_mailer.delivery_method = :letter_opener
+  config.action_mailer.delivery_method = :letter_opener_web
   config.action_mailer.perform_deliveries = true
 
   # Change to :null_store to avoid any caching.

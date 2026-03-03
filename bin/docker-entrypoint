@@ -3,6 +3,11 @@
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
+
+  # Create solid_queue tables on first deploy (they live in a separate schema file).
+  # Skipped on subsequent deploys when the tables already exist.
+  ./bin/rails runner "exit(ActiveRecord::Base.connection.table_exists?('solid_queue_jobs') ? 0 : 1)" 2>/dev/null \
+    || ./bin/rails db:schema:load:queue
 fi
 
 exec "${@}"
