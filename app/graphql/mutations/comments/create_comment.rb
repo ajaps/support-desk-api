@@ -11,17 +11,20 @@ module Mutations
         ticket = Ticket.find(ticket_id)
         authorize! ticket, :add_comment?
 
-        # # Customers may only comment on their own tickets
-        # if current_user.customer? && ticket.customer_id != current_user.id
-        #   raise GraphQL::ExecutionError, "Not authorized"
-        # end
-
         comment = ticket.comments.build(user: current_user, body: body)
-        if comment.save
-          { comment: comment, errors: [] }
-        else
-          { comment: nil, errors: comment.errors.full_messages }
+
+        ActiveRecord::Base.transaction do
+          comment.save!
+
+          # Automatically assign the ticket to the commenting agent if it's unassigned
+          if current_user.agent? && ticket.agent_id.nil?
+            ticket.update!(agent: current_user)
+          end
         end
+
+        { comment: comment, errors: [] }
+      rescue ActiveRecord::RecordInvalid => e
+        { comment: nil, errors: e.record.errors.full_messages }
       end
     end
   end
