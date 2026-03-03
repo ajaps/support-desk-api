@@ -28,9 +28,7 @@ module Types
     end
 
     def tickets(status: nil)
-      raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
-
-      scope = Pundit.policy_scope!(context[:current_user], Ticket)
+      scope = Pundit.policy_scope!(current_user, Ticket)
       if status&.downcase&.include?("open")
         scope = scope.where(closed_at: nil)
       elsif status&.downcase&.include?("close")
@@ -45,9 +43,7 @@ module Types
     end
 
     def ticket(id:)
-      raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
-
-      ticket = Pundit.policy_scope!(context[:current_user], Ticket).find_by(id: id)
+      ticket = Pundit.policy_scope!(current_user, Ticket).find_by(id: id)
 
       raise GraphQL::ExecutionError, "Not found or not authorized" unless ticket
 
@@ -64,8 +60,7 @@ module Types
           description: "Human-readable average time between ticket creation and first agent reply for the current month. Agents only."
 
     def average_agent_response_time
-      raise GraphQL::ExecutionError, "Not authenticated" unless context[:current_user]
-      raise GraphQL::ExecutionError, "Not authorized" unless context[:current_user].agent?
+      require_agent!
 
       period_start = Date.current.beginning_of_month.beginning_of_day
       period_end   = Date.current.end_of_month.end_of_day
@@ -87,12 +82,20 @@ module Types
       SQL
       result = ActiveRecord::Base.connection.select_value(sql)
 
-      return nil unless result
+      return "N/A" unless result
 
       humanize_duration(result.to_f)
     end
 
     private
+
+    def current_user
+      context[:current_user] || raise(GraphQL::ExecutionError, "Not authenticated")
+    end
+
+    def require_agent!
+      raise GraphQL::ExecutionError, "Not authorized" unless current_user.agent?
+    end
 
     def humanize_duration(seconds)
       total_minutes = (seconds / 60).round
