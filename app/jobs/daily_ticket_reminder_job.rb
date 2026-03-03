@@ -1,3 +1,5 @@
+require "csv"
+
 class DailyTicketReminderJob < ApplicationJob
   queue_as :mailers
 
@@ -5,14 +7,14 @@ class DailyTicketReminderJob < ApplicationJob
     tickets = Ticket.where(closed_at: nil).includes(:customer, :agent)
     data = generate_csv(tickets)
 
-    export = Export.create!(status: "ready", export_type: "daily_reminder")
+    export = Export.create!(status: :completed, export_type: "daily_reminder")
     export.file.attach(
       io: StringIO.new(data),
       filename: "daily_ticket_reminder_#{Time.current.strftime('%Y_%m_%d')}.csv",
       content_type: "text/csv"
     )
 
-    User.agents.find_each do |agent|
+    User.agent.find_each do |agent|
       OpenTicketsMailer.ready(agent, export).deliver_later
     end
   end

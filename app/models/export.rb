@@ -1,10 +1,10 @@
 class Export < ApplicationRecord
-  belongs_to :agent, class_name: "User"
+  belongs_to :agent, class_name: "User", optional: true
   has_one_attached :file
 
   validates :export_type, presence: true
   validates :status, presence: true
-  validates :agent, presence: true
+  validates :agent, presence: true, unless: -> { export_type == "daily_reminder" }
 
   validate :single_pending_export_per_agent, if: :pending?
   validate :cannot_download_multiple_exports_within_short_timeframe

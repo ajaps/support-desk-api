@@ -23,7 +23,7 @@ class ExportTicketsJob < ApplicationJob
       ExportMailer.ready(user, export).deliver_later
       export.update(status: :completed)
     rescue => e
-      export&.update(status: "failed", error_message: e.message)
+      export&.update!(status: "failed", error_message: e.message)
       raise
     end
   end

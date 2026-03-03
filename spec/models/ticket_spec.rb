@@ -52,6 +52,36 @@ RSpec.describe Ticket, type: :model do
       expect(ticket).to be_valid
     end
 
+    it "allows JPEG attachment" do
+      ticket = build(:ticket)
+      ticket.file.attach(
+        io:           StringIO.new("fake"),
+        filename:     "photo.jpg",
+        content_type: "image/jpeg"
+      )
+      expect(ticket).to be_valid
+    end
+
+    it "allows GIF attachment" do
+      ticket = build(:ticket)
+      ticket.file.attach(
+        io:           StringIO.new("fake"),
+        filename:     "anim.gif",
+        content_type: "image/gif"
+      )
+      expect(ticket).to be_valid
+    end
+
+    it "allows PDF attachment" do
+      ticket = build(:ticket)
+      ticket.file.attach(
+        io:           StringIO.new("fake"),
+        filename:     "doc.pdf",
+        content_type: "application/pdf"
+      )
+      expect(ticket).to be_valid
+    end
+
     it "rejects disallowed content types" do
       ticket = build(:ticket)
       ticket.file.attach(
@@ -61,6 +91,71 @@ RSpec.describe Ticket, type: :model do
       )
       expect(ticket).not_to be_valid
       expect(ticket.errors[:file]).to be_present
+    end
+
+    it "rejects files larger than 4 MB" do
+      ticket = build(:ticket)
+      ticket.file.attach(
+        io:           StringIO.new("x" * (4.megabytes + 1)),
+        filename:     "big.png",
+        content_type: "image/png"
+      )
+      expect(ticket).not_to be_valid
+      expect(ticket.errors[:file]).to be_present
+    end
+  end
+
+  describe "#close!" do
+    let(:ticket) { create(:ticket) }
+
+    it "sets closed_at to the current time" do
+      freeze_time do
+        ticket.close!
+        expect(ticket.reload.closed_at).to eq(Time.current)
+      end
+    end
+
+    it "is idempotent when called on an already-closed ticket" do
+      ticket.update!(closed_at: 1.hour.ago)
+      original_closed_at = ticket.closed_at
+      ticket.close!
+      expect(ticket.reload.closed_at).to eq(original_closed_at)
+    end
+  end
+
+  describe "#closed?" do
+    it "returns false for an open ticket" do
+      expect(build(:ticket, closed_at: nil).closed?).to be false
+    end
+
+    it "returns true for a closed ticket" do
+      expect(build(:ticket, :closed).closed?).to be true
+    end
+  end
+
+  describe "#status" do
+    it "returns 'open' for an open ticket" do
+      expect(build(:ticket).status).to eq("open")
+    end
+
+    it "returns 'closed' for a closed ticket" do
+      expect(build(:ticket, :closed).status).to eq("closed")
+    end
+  end
+
+  describe "#agent_comments" do
+    let(:ticket)   { create(:ticket) }
+    let(:agent)    { create(:user, :agent) }
+    let(:customer) { ticket.customer }
+
+    it "returns only comments made by agents" do
+      agent_comment     = create(:comment, ticket: ticket, user: agent)
+      _customer_comment = create(:comment, ticket: ticket, user: customer)
+      expect(ticket.agent_comments).to contain_exactly(agent_comment)
+    end
+
+    it "returns an empty collection when no agent has commented" do
+      expect(ticket.agent_comments).to be_empty
     end
   end
 end

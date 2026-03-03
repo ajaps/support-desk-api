@@ -22,7 +22,5 @@ class TicketPolicy < ApplicationPolicy
   # CSV export is agent-only
   def export?  = user.agent?
 
-  def add_comment? = user.agent? || (record.agent_comments.exists? && record.customer_id == user.id) && record.closed_at.nil?
-
-  def export? = user.agent?
+  def add_comment? = record.closed_at.nil? && (user.agent? || (record.agent_comments.exists? && record.customer_id == user.id))
 end

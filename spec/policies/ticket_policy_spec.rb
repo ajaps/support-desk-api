@@ -63,4 +63,40 @@ RSpec.describe TicketPolicy, type: :policy do
       expect(described_class.new(customer, ticket).export?).to be false
     end
   end
+
+  describe "#add_comment?" do
+    context "when the ticket is open" do
+      it "allows an agent" do
+        expect(described_class.new(agent, ticket).add_comment?).to be true
+      end
+
+      it "denies the ticket owner before any agent has commented" do
+        expect(described_class.new(customer, ticket).add_comment?).to be false
+      end
+
+      context "after an agent has commented" do
+        before { create(:comment, ticket: ticket, user: agent) }
+
+        it "allows the ticket owner" do
+          expect(described_class.new(customer, ticket).add_comment?).to be true
+        end
+
+        it "denies a different customer" do
+          expect(described_class.new(other_customer, ticket).add_comment?).to be false
+        end
+      end
+    end
+
+    context "when the ticket is closed" do
+      let(:ticket) { create(:ticket, :closed, customer: customer) }
+
+      it "denies an agent" do
+        expect(described_class.new(agent, ticket).add_comment?).to be false
+      end
+
+      it "denies the ticket owner" do
+        expect(described_class.new(customer, ticket).add_comment?).to be false
+      end
+    end
+  end
 end

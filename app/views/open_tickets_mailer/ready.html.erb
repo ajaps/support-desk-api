@@ -13,7 +13,7 @@
     </style>
   </head>
   <body>
-    <h1>👋 Good morning, <%= @user.first_name %>!</h1>
+    <h1>👋 Good morning, <%= @user.name %>!</h1>
 
     <div class="summary">
       Your <strong>daily open tickets report</strong> for
@@ -26,7 +26,6 @@
 
     <div class="footer">
       You're receiving this as a member of the support team.<br />
-      <%= link_to "Unsubscribe from daily reminders", unsubscribe_notifications_url(token: @user.notification_token) %>
     </div>
   </body>
 </html>

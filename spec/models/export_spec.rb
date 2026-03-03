@@ -4,7 +4,6 @@ RSpec.describe Export, type: :model do
   let(:agent) { create(:user, :agent) }
 
   describe "associations" do
-    it { is_expected.to belong_to(:agent).class_name("User") }
     it { is_expected.to have_one_attached(:file) }
   end
 

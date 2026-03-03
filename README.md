@@ -40,7 +40,7 @@ rails s
 
 The API is available at `http://localhost:3000/graphql`.
 
-### Docker (dev) - Preferred
+### Docker (dev) - Recommended
 
 ```bash
 docker compose build

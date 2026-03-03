@@ -10,8 +10,6 @@ class Ticket < ApplicationRecord
   validate :creator_must_be_customer, on: :create
   validate :file_content_type
   validate :assigned_must_be_agent
-  validates :file, attached: false, if: -> { file.attached? }
-  validates :file, content_type: [ "image/png", "image/jpeg", "application/pdf" ], if: -> { file.attached? }
   validates :file, size: { less_than: 4.megabytes }, if: -> { file.attached? }
 
   scope :recently_closed, -> { where.not(closed_at: nil).where(closed_at: 1.month.ago.beginning_of_day..Time.current) }
@@ -55,7 +53,7 @@ class Ticket < ApplicationRecord
     return unless file.attached?
 
     unless file.content_type.in?(%w[image/png image/jpeg image/gif application/pdf])
-      errors.add(:file, "must be PNG, JPEG, GIF, or PDF")
+      errors.add(:file, "must be PNG, JPEG, or PDF")
     end
   end
 end

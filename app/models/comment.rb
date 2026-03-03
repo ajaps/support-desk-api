@@ -16,12 +16,6 @@ class Comment < ApplicationRecord
 
   private
 
-  def customer_cannot_comment_before_agent
-    if ticket.comments.where(user: User.agent).empty?
-      errors.add(:base, "Customers can only comment after a support agent has replied.")
-    end
-  end
-
   def user_must_be_ticket_owner
     unless ticket.customer == user
       errors.add(:user, "must be the ticket owner")
