@@ -9,12 +9,14 @@
 #   end
 
 agent = User.create!(
+  name: "Agent Smith",
   email: "agent@example.com",
   password: "password",
   role: :agent
 )
 
 customer = User.create!(
+  name: "John Doe",
   email: "customer@example.com",
   password: "password",
   role: :customer
