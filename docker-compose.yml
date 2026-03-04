@@ -36,7 +36,8 @@ services:
     
     environment:
       RAILS_ENV: development
-      QUEUE_DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@db:5432/support_desk_api_development}
+      DATABASE_URL: postgresql://postgres:password@db:5432/support_desk_api_development
+      QUEUE_DATABASE_URL: postgresql://postgres:password@db:5432/support_desk_api_development
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       SOLID_QUEUE_IN_PUMA: "true"
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
