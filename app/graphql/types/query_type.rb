@@ -28,7 +28,7 @@ module Types
     end
 
     def tickets(status: nil)
-      scope = Pundit.policy_scope!(current_user, Ticket)
+      scope = Pundit.policy_scope!(current_user, Ticket).includes(:customer, :agent)
       if status&.downcase&.include?("open")
         scope = scope.where(closed_at: nil)
       elsif status&.downcase&.include?("close")
@@ -43,7 +43,7 @@ module Types
     end
 
     def ticket(id:)
-      ticket = Pundit.policy_scope!(current_user, Ticket).find_by(id: id)
+      ticket = Pundit.policy_scope!(current_user, Ticket).includes(:customer, :agent).find_by(id: id)
 
       raise GraphQL::ExecutionError, "Not found or not authorized" unless ticket
 

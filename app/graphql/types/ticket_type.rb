@@ -11,8 +11,9 @@ module Types
     field :comments,    [ CommentType ], null: false
     field :created_at,  GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at,  GraphQL::Types::ISO8601DateTime, null: false
-    field :closed_at,  GraphQL::Types::ISO8601DateTime, null: true
-    field :status,      String,      null: false
+    field :closed_at,        GraphQL::Types::ISO8601DateTime, null: true
+    field :agent_replied_at, GraphQL::Types::ISO8601DateTime, null: true
+    field :status,           String,      null: false
     field :file_url,    String,      null: true
 
     def comments

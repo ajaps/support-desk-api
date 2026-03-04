@@ -22,9 +22,10 @@ end
 puts "  Creating users..."
 
 agents = [
-  { name: "Chioma Okafor",    email: "chioma.agent@tixafrica.com" },
-  { name: "Emeka Nwosu",      email: "emeka.agent@tixafrica.com" },
-  { name: "Fatima Abubakar",  email: "fatima.agent@tixafrica.com" }
+  { name: "Chioma Okafor",    email: "chioma.agent@email.com" },
+  { name: "Emeka Nwosu",      email: "emeka.agent@email.com" },
+  { name: "Fatima Abubakar",  email: "fatima.agent@email.com" },
+  { name: "Ajaps",            email: "ajaps@gmail.com" }
 ].map do |attrs|
   User.find_or_create_by!(email: attrs[:email]) do |u|
     u.name     = attrs[:name]
@@ -38,7 +39,8 @@ customers = [
   { name: "Ngozi Eze",           email: "ngozi.eze@yahoo.com" },
   { name: "Kemi Balogun",        email: "kemi.balogun@gmail.com" },
   { name: "Chukwuemeka Obi",     email: "emeka.obi@hotmail.com" },
-  { name: "Aisha Mohammed",      email: "aisha.mohammed@gmail.com" }
+  { name: "Aisha Mohammed",      email: "aisha.mohammed@gmail.com" },
+  { name: "Franklin",            email: "frank@gmail.com" }
 ].map do |attrs|
   User.find_or_create_by!(email: attrs[:email]) do |u|
     u.name     = attrs[:name]
@@ -194,7 +196,7 @@ puts "  Creating recently closed tickets..."
         age: 8.days.ago },
       { user: agents[2],    body: "Update Tunde: The venue has confirmed that the seating error was entirely " \
                                   "on their end due to a staffing mix-up. We have processed a ₦20,000 goodwill " \
-                                  "credit to your Tix Africa wallet. The full event cost refund will follow " \
+                                  "credit to your Africa wallet. The full event cost refund will follow " \
                                   "within 48 hours. Again, we sincerely apologise.",
         age: 7.days.ago + 1.hour }
     ],
@@ -202,7 +204,7 @@ puts "  Creating recently closed tickets..."
   },
   {
     title:       "App is crashing when I try to open my QR code ticket",
-    description: "Please every time I try to open my ticket on the Tix Africa app to show the QR code " \
+    description: "Please every time I try to open my ticket on the Africa app to show the QR code " \
                  "the app just closes by itself. I have tried 3 times already. I am using a Tecno Camon 20 " \
                  "with Android 13. The concert is tomorrow and I am very worried.",
     customer:    customers[1],
@@ -306,7 +308,65 @@ puts "  Creating recently closed tickets..."
 end
 
 # ──────────────────────────────────────────────────────────────
-# 4. Older closed tickets (> 1 month ago) — excluded from recent exports
+# 4. Extra open tickets — for pagination testing (pushes open count above 10)
+# ──────────────────────────────────────────────────────────────
+puts "  Creating extra open tickets for pagination testing..."
+
+[
+  { title: "Cannot download my receipt after purchase",
+    description: "Good morning, after buying my ticket the receipt download button shows an error. " \
+                 "I need the receipt for reimbursement at my workplace. Please assist.",
+    customer: customers[0], age: 1.hour.ago },
+  { title: "Wrong event time shown on my ticket — AFCON watch party",
+    description: "Please the ticket says 6:00 PM but the organiser posted on Instagram that it starts at 4:00 PM. " \
+                 "Which one is correct? I don't want to arrive late.",
+    customer: customers[1], age: 3.hours.ago },
+  { title: "Seated in disabled section by mistake — please reassign",
+    description: "Hi, I don't have a disability but I was assigned a seat in the accessible section. " \
+                 "I would like to be moved to the regular floor standing area. Ticket ID: ORD-20240315-4421.",
+    customer: customers[2], age: 7.hours.ago },
+  { title: "Ticket confirmation email went to wrong address",
+    description: "I accidentally typed my email as ngozi@yahooo.com (three o's) during checkout. " \
+                 "How can I get the confirmation resent to my correct address ngozi.eze@yahoo.com?",
+    customer: customers[1], age: 10.hours.ago },
+  { title: "App is showing 'event sold out' but website still has tickets",
+    description: "Please the Africa mobile app says the Rhythm Unplugged event is sold out " \
+                 "but when I open the website on my laptop it still shows available. " \
+                 "Which one should I trust? I don't want to miss out.",
+    customer: customers[3], age: 12.hours.ago },
+  { title: "Need invoice with VAT for corporate purchase",
+    description: "Good afternoon, I purchased 10 tickets on behalf of my company Zenith Logistics Ltd. " \
+                 "I need an official VAT invoice. Our TIN is 12345678-0001. Please send to finance@zenithlogistics.com.",
+    customer: customers[4], age: 15.hours.ago },
+  { title: "Venue address on ticket is different from Google Maps",
+    description: "The ticket shows 'Muri Okunola Park, Victoria Island' but Google Maps is showing a " \
+                 "different location when I search that name. Please confirm the exact address with a landmark.",
+    customer: customers[0], age: 18.hours.ago },
+  { title: "Payment keeps failing on my Opay card",
+    description: "I have tried three times to buy a ticket but it keeps showing 'Transaction declined' " \
+                 "on my Opay card. My balance is sufficient. Is there a known issue with Opay on your platform?",
+    customer: customers[2], age: 20.hours.ago },
+  { title: "Resell or transfer ticket — I can no longer attend",
+    description: "Hi please, I bought a ticket for the GTBank Fashion Weekend but I have a work trip " \
+                 "that weekend now. Can I sell or transfer this ticket to someone else?",
+    customer: customers[3], age: 22.hours.ago },
+  { title: "Bought VIP but access control turned me away at VIP gate",
+    description: "This is very embarrassing and upsetting. I paid ₦80,000 for a VIP table at " \
+                 "the Lagos International Jazz Festival. When I got to the VIP entrance the security " \
+                 "said my ticket is 'standard' on their system. I had to sit in general admission. " \
+                 "Please investigate and refund the price difference.",
+    customer: customers[4], age: 1.day.ago }
+].each do |attrs|
+  ticket = Ticket.create!(
+    title:       attrs[:title],
+    description: attrs[:description],
+    customer:    attrs[:customer]
+  )
+  stamp(ticket, attrs[:age])
+end
+
+# ──────────────────────────────────────────────────────────────
+# 5. Older closed tickets (> 1 month ago) — excluded from recent exports
 # ──────────────────────────────────────────────────────────────
 puts "  Creating older closed tickets..."
 
@@ -322,7 +382,7 @@ puts "  Creating older closed tickets..."
     comments: [
       { user: agents[0],    body: "Good day Aisha, I am sorry to hear about the emergency — I hope all " \
                                   "is well with your family. Yes, ticket transfers are supported! " \
-                                  "Biodun just needs to create a free Tix Africa account and then you can " \
+                                  "Biodun just needs to create a free Africa account and then you can " \
                                   "initiate the transfer from the 'My Orders' section on your dashboard.",
         age: 44.days.ago + 2.hours },
       { user: customers[4], body: "It worked! My brother has the ticket now. Thank you so much Chioma, " \
@@ -361,7 +421,7 @@ puts "  Creating older closed tickets..."
       { user: agents[2],    body: "Good morning Tunde, that sounds like a wonderful outing! " \
                                   "Yes, we do offer group rates for parties of 10 and above. " \
                                   "For a group of 15 you will qualify for a 12% discount. " \
-                                  "Please send an email to groups@tixafrica.com with the event name, " \
+                                  "Please send an email to groups@africa.com with the event name, " \
                                   "your group size, and preferred ticket category. Our team will " \
                                   "send you a custom promo code within 24 hours.",
         age: 34.days.ago + 1.hour },

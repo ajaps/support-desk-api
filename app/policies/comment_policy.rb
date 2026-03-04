@@ -6,7 +6,7 @@ class CommentPolicy < ApplicationPolicy
     # already commented
     return false unless record.ticket.customer_id == user.id
 
-    record.ticket.comments.joins(:user).where(users: { role: "agent" }).exists?
+    record.ticket.agent_replied_at.present?
   end
 
   def show? = ticket_visible?

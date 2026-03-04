@@ -2,8 +2,8 @@ require "rails_helper"
 
 RSpec.describe "Auth mutations", type: :request do
   SIGN_UP = <<~GQL
-    mutation SignUp($name: String!, $email: String!, $password: String!, $role: String) {
-      signUp(input: { name: $name, email: $email, password: $password, role: $role }) {
+    mutation SignUp($name: String!, $email: String!, $password: String!) {
+      signUp(input: { name: $name, email: $email, password: $password }) {
         token user { id email role } errors
       }
     }
@@ -26,10 +26,10 @@ RSpec.describe "Auth mutations", type: :request do
       expect(result.dig("data", "signUp", "errors")).to be_empty
     end
 
-    it "creates an agent when role is specified" do
+    it "always creates a customer regardless of any attempted role injection" do
       result = gql(SIGN_UP, variables: { name: "Bob", email: "bob@test.com",
-                                         password: "Password1!", role: "agent" })
-      expect(result.dig("data", "signUp", "user", "role")).to eq("agent")
+                                         password: "Password1!" })
+      expect(result.dig("data", "signUp", "user", "role")).to eq("customer")
     end
 
     it "returns errors for a duplicate email" do

@@ -25,7 +25,7 @@ RSpec.describe "Analytics queries", type: :request do
 
       it "returns null" do
         result = gql(AVERAGE_RESPONSE_TIME, current_user: agent)
-        expect(result.dig("data", "averageAgentResponseTime")).to be_nil
+        expect(result.dig("data", "averageAgentResponseTime")).to eq('N/A')
       end
     end
 

@@ -220,6 +220,29 @@ Enqueues a background job that generates a CSV of tickets closed in the last mon
 
 ---
 
+## Test Accounts
+
+After running `rails db:seed`, the following accounts are available (password: `password123`):
+
+| Role | Email |
+| --- | --- |
+| Agent | `chioma.agent@email.com` |
+| Agent | `emeka.agent@email.com` |
+| Customer | `tunde.adeyemi@gmail.com` |
+| Customer | `ngozi.eze@yahoo.com` |
+
+All agents have full access to every ticket. All customers see only their own tickets.
+
+### Promoting a user to agent (production)
+
+There is no self-serve path to agent — all public sign-ups are locked to the `customer` role. To promote an existing user via the Rails console:
+
+```ruby
+User.find_by(email: "someone@example.com").update!(role: :agent)
+```
+
+---
+
 ## User Roles
 
 | Capability | Customer | Agent |
