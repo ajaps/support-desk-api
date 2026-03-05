@@ -74,6 +74,13 @@ cp .env.example .env
 
 ---
 
+## Existing Agent Logins
+After running the seeds file `bin/rails db:seed`, these agents login details are available
+Email: ajaps@gmail.com  Password: password123
+Email: chioma.agent@email.com  Password: password123
+Email: emeka.agent@email.com  Password: password123
+Email: fatima.agent@email.com  Password: password123
+
 ## API
 
 All requests go to a single endpoint:

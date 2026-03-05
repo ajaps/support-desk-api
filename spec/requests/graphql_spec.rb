@@ -126,7 +126,7 @@ RSpec.describe "GraphQL API", type: :request do
       nodes_query = <<~GQL
         query($ids: [ID!]!) { nodes(ids: $ids) { id } }
       GQL
-      result = gql(nodes_query, variables: { ids: [ticket.to_gid_param] }, current_user: customer)
+      result = gql(nodes_query, variables: { ids: [ ticket.to_gid_param ] }, current_user: customer)
       expect(result.dig("data", "nodes", 0, "id")).to be_present
     end
   end
