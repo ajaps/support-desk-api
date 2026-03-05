@@ -184,5 +184,70 @@ RSpec.describe "Ticket mutations and queries", type: :request do
       expect(node["status"]).to eq("open")
       expect(node.dig("agent", "name")).to eq(agent.name)
     end
+
+    it "returns an error when the ticket does not exist" do
+      result = gql(ASSIGN_TICKET, variables: { ticketId: -1 }, current_user: agent)
+      expect(result.dig("data", "assignTicket", "errors")).to include("Ticket not found")
+    end
+  end
+
+  describe "closeTicket — already closed" do
+    let(:ticket) { create(:ticket, customer: customer) }
+
+    it "returns an error when the ticket is already closed" do
+      gql(CLOSE_TICKET, variables: { ticketId: ticket.id }, current_user: agent)
+      result = gql(CLOSE_TICKET, variables: { ticketId: ticket.id }, current_user: agent)
+      expect(result.dig("data", "closeTicket", "ticket")).to be_nil
+      expect(result.dig("data", "closeTicket", "errors")).to include("Ticket is already closed")
+    end
+  end
+
+  describe "ticket fileUrl" do
+    GET_TICKET_FILE_URL = <<~GQL
+      query($id: ID!) { ticket(id: $id) { id fileUrl } }
+    GQL
+
+    it "returns a URL when a file is attached" do
+      ticket = create(:ticket, customer: customer)
+      ticket.file.attach(
+        io:           StringIO.new("fake png data"),
+        filename:     "test.png",
+        content_type: "image/png"
+      )
+      result = gql(GET_TICKET_FILE_URL, variables: { id: ticket.id }, current_user: customer)
+      expect(result.dig("data", "ticket", "fileUrl")).to be_present
+    end
+
+    it "returns nil when no file is attached" do
+      ticket = create(:ticket, customer: customer)
+      result = gql(GET_TICKET_FILE_URL, variables: { id: ticket.id }, current_user: customer)
+      expect(result.dig("data", "ticket", "fileUrl")).to be_nil
+    end
+  end
+
+  describe "tickets query — additional status filters" do
+    it "filters by closed status" do
+      create(:ticket, :closed, customer: customer)
+      create(:ticket, customer: customer)
+      result = gql(GET_TICKETS, variables: { status: "closed" }, current_user: customer)
+      statuses = result.dig("data", "tickets", "edges").map { |e| e.dig("node", "status") }
+      expect(statuses).to all(eq("closed"))
+    end
+
+    it "filters by awaiting_customer status" do
+      create(:ticket, customer: customer, status: "awaiting_customer")
+      create(:ticket, customer: customer)
+      result = gql(GET_TICKETS, variables: { status: "awaiting_customer" }, current_user: customer)
+      statuses = result.dig("data", "tickets", "edges").map { |e| e.dig("node", "status") }
+      expect(statuses).to all(eq("awaiting_customer"))
+    end
+
+    it "filters by awaiting_agent status" do
+      create(:ticket, customer: customer, status: "awaiting_agent")
+      create(:ticket, customer: customer)
+      result = gql(GET_TICKETS, variables: { status: "awaiting_agent" }, current_user: customer)
+      statuses = result.dig("data", "tickets", "edges").map { |e| e.dig("node", "status") }
+      expect(statuses).to all(eq("awaiting_agent"))
+    end
   end
 end

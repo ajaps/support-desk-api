@@ -53,6 +53,30 @@ RSpec.describe "Auth mutations", type: :request do
     end
   end
 
+  describe "authentication middleware" do
+    it "returns an error when the token's user no longer exists" do
+      user  = create(:user, email: "gone@test.com", password: "Password1!")
+      token = TokenService.encode(user)
+      user.destroy!
+
+      post "/graphql",
+           params:  { query: "{ tickets { totalCount } }", variables: "{}" }.to_json,
+           headers: { "Content-Type" => "application/json", "Authorization" => "Bearer #{token}" }
+
+      data = JSON.parse(response.body)
+      expect(data.dig("errors", 0, "message")).to match(/not authenticated/i)
+    end
+  end
+
+  describe "me query" do
+    let!(:user) { create(:user, email: "me@test.com", password: "Password1!") }
+
+    it "returns the current user" do
+      result = gql("{ me { id email } }", current_user: user)
+      expect(result.dig("data", "me", "email")).to eq("me@test.com")
+    end
+  end
+
   describe "signIn" do
     let!(:user) { create(:user, email: "login@test.com", password: "Password1!") }
 

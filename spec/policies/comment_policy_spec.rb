@@ -39,4 +39,21 @@ RSpec.describe CommentPolicy, type: :policy do
       end
     end
   end
+
+  describe "#show?" do
+    it "permits an agent" do
+      comment = build(:comment, ticket: ticket, user: agent)
+      expect(described_class.new(agent, comment).show?).to be true
+    end
+
+    it "permits the ticket owner" do
+      comment = build(:comment, ticket: ticket, user: customer)
+      expect(described_class.new(customer, comment).show?).to be true
+    end
+
+    it "denies a customer who does not own the ticket" do
+      comment = build(:comment, ticket: ticket, user: other_customer)
+      expect(described_class.new(other_customer, comment).show?).to be false
+    end
+  end
 end

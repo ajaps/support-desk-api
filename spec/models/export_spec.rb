@@ -50,6 +50,18 @@ RSpec.describe Export, type: :model do
     end
   end
 
+  describe "#ticket_count" do
+    it "returns 0 when ticket_array is nil" do
+      export = build(:export, agent: agent, ticket_array: nil)
+      expect(export.ticket_count).to eq(0)
+    end
+
+    it "returns the number of tickets in ticket_array" do
+      export = build(:export, agent: agent, ticket_array: "[1, 2, 3]")
+      expect(export.ticket_count).to eq(3)
+    end
+  end
+
   describe "#presigned_url" do
     before do
       ActiveStorage::Current.url_options = {

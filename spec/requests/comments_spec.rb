@@ -93,4 +93,21 @@ RSpec.describe "Comment mutations", type: :request do
       expect(result["errors"]).to be_present
     end
   end
+
+  describe "ticket comments query" do
+    GET_TICKET_COMMENTS = <<~GQL
+      query($id: ID!) {
+        ticket(id: $id) {
+          comments { id body }
+        }
+      }
+    GQL
+
+    before { create(:comment, ticket: ticket, user: agent) }
+
+    it "returns comments on the ticket" do
+      result = gql(GET_TICKET_COMMENTS, variables: { id: ticket.id }, current_user: customer)
+      expect(result.dig("data", "ticket", "comments").size).to eq(1)
+    end
+  end
 end

@@ -119,6 +119,27 @@ RSpec.describe "GraphQL API", type: :request do
     end
   end
 
+  describe "nodes query" do
+    let(:ticket) { create(:ticket, customer: customer) }
+
+    it "returns objects for a list of IDs" do
+      nodes_query = <<~GQL
+        query($ids: [ID!]!) { nodes(ids: $ids) { id } }
+      GQL
+      result = gql(nodes_query, variables: { ids: [ticket.to_gid_param] }, current_user: customer)
+      expect(result.dig("data", "nodes", 0, "id")).to be_present
+    end
+  end
+
+  describe "invalid variables format" do
+    it "returns 400 when variables is not a supported type" do
+      post "/graphql",
+           params:  '{"query":"{ __typename }","variables":[1,2,3]}',
+           headers: { "Content-Type" => "application/json" }
+      expect(response.status).to eq(400)
+    end
+  end
+
   describe "closeTicket mutation" do
     let(:ticket) { create(:ticket) }
     let(:mutation) do

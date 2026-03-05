@@ -61,5 +61,20 @@ RSpec.describe "Export mutations", type: :request do
       expect(result.dig("data", "exportRecentlyClosedTickets", "success")).to be false
       expect(result.dig("data", "exportRecentlyClosedTickets", "message")).to be_present
     end
+
+    it "returns a download_url for a completed export via the node query" do
+      export = create(:export, :with_file, agent: agent)
+      query  = <<~GQL
+        query($id: ID!) {
+          node(id: $id) {
+            ... on Export { id downloadUrl }
+          }
+        }
+      GQL
+      # schema_gql used here so ActiveStorage::Current.url_options from the before
+      # block are in effect; the HTTP stack resets them to the request host.
+      result = schema_gql(query, variables: { id: export.to_gid_param }, current_user: agent)
+      expect(result.dig("data", "node", "downloadUrl")).to be_present
+    end
   end
 end
