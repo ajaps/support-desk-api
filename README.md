@@ -67,19 +67,25 @@ cp .env.example .env
 | `QUEUE_DATABASE_URL` | SolidQueue DB URL (defaults to `DATABASE_URL`) | — |
 | `REDIS_URL` | Redis for ActionCable | `redis://localhost:6379/0` |
 | `RAILS_MASTER_KEY` | Decrypts `config/credentials.yml.enc` | read from `config/master.key` |
+| `JWT_SECRET` | Secret used to sign JWTs — generate with `rails secret` | insecure dev default (required in production) |
 | `FRONTEND_URL` | Allowed CORS origin | `http://localhost:5173` |
 | `APP_HOST` | Used in mailer link generation | `localhost:3000` |
 | `APP_PROTOCOL` | `http` or `https` | `http` |
 | `SOLID_QUEUE_IN_PUMA` | Set to `"true"` to run SolidQueue inside Puma | off locally |
+| `RESEND_API_KEY` | Resend API key for live email delivery (optional in development) | — |
 
 ---
 
 ## Existing Agent Logins
-After running the seeds file `bin/rails db:seed`, these agents login details are available
-Email: ajaps@gmail.com  Password: password123
-Email: chioma.agent@email.com  Password: password123
-Email: emeka.agent@email.com  Password: password123
-Email: fatima.agent@email.com  Password: password123
+
+After running the seeds file `bin/rails db:seed`, these agent login details are available:
+
+| Email | Password |
+| --- | --- |
+| `ajaps@gmail.com` | `password123` |
+| `chioma.agent@email.com` | `password123` |
+| `emeka.agent@email.com` | `password123` |
+| `fatima.agent@email.com` | `password123` |
 
 ## API
 
@@ -266,13 +272,20 @@ User.find_by(email: "someone@example.com").update!(role: :agent)
 
 ## Development
 
-### View sent emails
+### Email delivery
 
-Emails are captured locally and viewable in the browser — no mail server required:
+Emails (export download links, daily agent summaries) are sent via [Resend](https://resend.com) using the shared sender `onboarding@resend.dev` — no custom domain required.
 
-```text
-http://localhost:3000/letter_opener
+**To receive emails, sign up with a real email address.** After triggering an export of closed tickets, check that inbox for the download link.
+
+To enable live delivery locally, set `RESEND_API_KEY` before starting the server:
+
+```bash
+export RESEND_API_KEY="re_your_key_here"
+bundle exec rails s
 ```
+
+Without it, the app falls back to `:test` delivery mode — emails are not sent but are visible in the Rails log.
 
 ### Run tests
 
@@ -289,15 +302,17 @@ bundle exec bundle-audit      # dependency vulnerabilities
 
 ### Background jobs
 
-SolidQueue runs inside Puma when `SOLID_QUEUE_IN_PUMA=true` (set automatically in Docker). It is off by default for `rails s` so no extra setup is needed locally.
-
-To process jobs locally when needed:
+SolidQueue runs inside Puma when `SOLID_QUEUE_IN_PUMA=true` (set automatically in Docker). For local development, run it as a separate process to avoid macOS fork-safety issues:
 
 ```bash
-SOLID_QUEUE_IN_PUMA=true rails s
-# first-time queue table setup also required:
-# rails db:schema:load:queue
+# Terminal 1 — web server
+bundle exec rails s
+
+# Terminal 2 — background job worker
+bundle exec rails solid_queue:start
 ```
+
+> First-time setup: if the queue tables do not exist yet, run `rails db:schema:load:queue` before starting the worker.
 
 ---
 
@@ -319,7 +334,9 @@ The repository includes a `render.yaml` blueprint that provisions:
 | Variable | Where to get it |
 | --- | --- |
 | `RAILS_MASTER_KEY` | Contents of `config/master.key` |
+| `JWT_SECRET` | Run `rails secret` and paste the output |
 | `FRONTEND_URL` | Your frontend URL, e.g. `https://your-app.vercel.app` |
 | `APP_HOST` | Your Render API URL, e.g. `your-api.onrender.com` |
+| `RESEND_API_KEY` | From your [Resend](https://resend.com) dashboard |
 
 On the first deploy, `db:prepare` runs automatically and the SolidQueue tables are created if they do not exist yet.

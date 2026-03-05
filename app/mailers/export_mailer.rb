@@ -1,5 +1,5 @@
 class ExportMailer < ApplicationMailer
-  default from: "no-reply@support-desk.com"
+  default from: "onboarding@resend.dev"
 
   def ready(user, export)
     @user   = user

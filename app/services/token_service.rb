@@ -1,5 +1,5 @@
 class TokenService
-  SECRET = Rails.application.credentials.jwt_secret!
+  SECRET = Rails.application.credentials.jwt_secret || ENV.fetch("JWT_SECRET")
   TTL    = 24.hours.to_i
   ALG    = "HS256"
 
