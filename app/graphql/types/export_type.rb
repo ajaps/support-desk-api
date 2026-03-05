@@ -1,5 +1,7 @@
 module Types
   class ExportType < BaseObject
+    implements Types::NodeType
+
     connection_type_class Types::BaseConnection
     edge_type_class       Types::BaseEdge
 

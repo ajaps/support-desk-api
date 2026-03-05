@@ -9,8 +9,6 @@ module Mutations
       field :errors, [ String ], null: false
 
       def resolve(title:, description:, file_signed_id: nil)
-        raise GraphQL::ExecutionError, "Customers only" unless current_user.customer?
-
         ticket = current_user.tickets_as_customer.build(title: title, description: description)
         ticket.file.attach(file_signed_id) if file_signed_id.present?
 

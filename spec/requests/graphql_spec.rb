@@ -4,15 +4,6 @@ RSpec.describe "GraphQL API", type: :request do
   let(:customer) { create(:user) }
   let(:agent)    { create(:user, :agent) }
 
-  def gql(query, variables: {}, user: nil)
-    headers = {}
-    headers["Authorization"] = "Bearer #{TokenService.encode(user)}" if user
-    post "/graphql",
-         params: { query: query, variables: variables.to_json }.to_json,
-         headers: headers.merge("Content-Type" => "application/json")
-    JSON.parse(response.body)
-  end
-
   # ── Auth ──────────────────────────────────────────────────────────────────
   describe "signUp mutation" do
     let(:mutation) do
@@ -51,15 +42,15 @@ RSpec.describe "GraphQL API", type: :request do
 
     it "allows a customer to create a ticket" do
       result = gql(mutation, variables: { title: "Help!", description: "Details" },
-                             user: customer)
+                             current_user: customer)
       expect(result.dig("data", "createTicket", "ticket", "closedAt")).to be_nil
       expect(result.dig("data", "createTicket", "ticket", "status")).to eq("open")
     end
 
     it "prevents an agent from creating a ticket" do
       result = gql(mutation, variables: { title: "Help!", description: "Details" },
-                             user: agent)
-      expect(result.dig("errors")[0]["message"]).to eq("Customers only")
+                             current_user: agent)
+      expect(result.dig("errors")[0]["message"]).to match(/not authorized/i)
     end
 
     it "returns an error when unauthenticated" do
@@ -75,14 +66,56 @@ RSpec.describe "GraphQL API", type: :request do
       create(:ticket, customer: customer)
       create(:ticket)   # belongs to another customer
 
-      result = gql(query, user: customer)
+      result = gql(query, current_user: customer)
       expect(result.dig("data", "tickets", "totalCount")).to eq(1)
     end
 
     it "returns all tickets for an agent" do
       create_list(:ticket, 3)
-      result = gql(query, user: agent)
+      result = gql(query, current_user: agent)
       expect(result.dig("data", "tickets", "totalCount")).to eq(3)
+    end
+  end
+
+  describe "node query" do
+    let(:ticket) { create(:ticket, customer: customer) }
+
+    let(:node_query) do
+      <<~GQL
+        query($id: ID!) { node(id: $id) { id } }
+      GQL
+    end
+
+    it "returns the object when the user is authorized" do
+      result = gql(node_query, variables: { id: ticket.to_gid_param }, current_user: customer)
+      expect(result.dig("data", "node", "id")).to be_present
+    end
+
+    it "returns a not-authorized error when the user cannot see the object" do
+      other_ticket = create(:ticket)
+      result = gql(node_query, variables: { id: other_ticket.to_gid_param }, current_user: customer)
+      expect(result.dig("errors", 0, "message")).to match(/not authorized/i)
+    end
+
+    it "returns a not-authenticated error when unauthenticated" do
+      result = gql(node_query, variables: { id: ticket.to_gid_param })
+      expect(result.dig("errors", 0, "message")).to match(/not authenticated/i)
+    end
+
+    it "returns null when the record no longer exists" do
+      gid = ticket.to_gid_param
+      ticket.destroy
+      result = gql(node_query, variables: { id: gid }, current_user: customer)
+      expect(result.dig("data", "node")).to be_nil
+    end
+
+    it "allows an agent to fetch their own export" do
+      export = create(:export, agent: agent)
+      export_query = <<~GQL
+        query($id: ID!) { node(id: $id) { id } }
+      GQL
+      result = gql(export_query, variables: { id: export.to_gid_param }, current_user: agent)
+      expect(result.dig("data", "node", "id")).to be_present
     end
   end
 
@@ -100,13 +133,13 @@ RSpec.describe "GraphQL API", type: :request do
     end
 
     it "allows an agent to close a ticket" do
-      result = gql(mutation, variables: { id: ticket.id }, user: agent)
+      result = gql(mutation, variables: { id: ticket.id }, current_user: agent)
       expect(result.dig("data", "closeTicket", "ticket", "status")).to eq("closed")
     end
 
     # it "allows a customer to also close ticket" do
     #   result = gql(mutation, variables: { id: ticket.id },
-    #                          user: customer)
+    #                          current_user: customer)
     #   expect(result.dig("data", "closeTicket", "ticket", "status")).to eq("closed")
     # end
   end

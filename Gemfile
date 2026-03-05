@@ -44,6 +44,7 @@ gem "graphql-rails_logger", group: :development
 
 gem "active_storage_validations"
 gem "pundit", "~> 2.3"
+gem "aasm"
 
 gem "csv"
 

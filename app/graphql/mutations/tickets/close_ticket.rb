@@ -7,17 +7,17 @@ module Mutations
       field :errors, [ String ], null: false
 
       def resolve(ticket_id:)
-        # require_agent!
         ticket = Ticket.find(ticket_id)
         authorize! ticket, :update?
 
         # Automatically assign the ticket to the closing agent if it's unassigned
         ticket.update!(agent: current_user) if ticket.agent_id.nil?
 
-        if ticket.close!
+        if ticket.may_close?
+          ticket.close!
           { ticket: ticket, errors: [] }
         else
-          { ticket: nil, errors: ticket.errors.full_messages }
+          { ticket: nil, errors: [ "Ticket is already closed" ] }
         end
       end
     end

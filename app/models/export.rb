@@ -7,7 +7,8 @@ class Export < ApplicationRecord
   validates :agent, presence: true, unless: -> { export_type == "daily_reminder" }
 
   validate :single_pending_export_per_agent, if: :pending?
-  validate :cannot_download_multiple_exports_within_short_timeframe
+  validate :cannot_export_too_frequently
+  validate :ticket_array_valid_json, if: -> { ticket_array.present? }
 
   scope :recent, -> { order(created_at: :desc) }
 
@@ -37,12 +38,20 @@ class Export < ApplicationRecord
     end
   end
 
-  def cannot_download_multiple_exports_within_short_timeframe
+  def cannot_export_too_frequently
     return unless agent_id
 
-    if Export.where(agent_id: agent_id, filename: filename)
-                           .where.not(id: id).exists?
+    if Export.where(agent_id: agent_id)
+             .where(created_at: 5.minutes.ago..)
+             .where.not(id: id)
+             .exists?
       errors.add(:base, "You have recently exported tickets. Please wait before exporting again.")
     end
+  end
+
+  def ticket_array_valid_json
+    JSON.parse(ticket_array)
+  rescue JSON::ParserError
+    errors.add(:ticket_array, "must be valid JSON")
   end
 end

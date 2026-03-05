@@ -1,4 +1,6 @@
 class Ticket < ApplicationRecord
+  include TicketStateMachine
+
   belongs_to :customer, class_name: "User"
   belongs_to :agent,    class_name: "User", optional: true
 
@@ -12,27 +14,12 @@ class Ticket < ApplicationRecord
   validate :assigned_must_be_agent
   validates :file, size: { less_than: 4.megabytes }, if: -> { file.attached? }
 
-  scope :recently_closed, -> { where.not(closed_at: nil).where(closed_at: 1.month.ago.beginning_of_day..Time.current) }
-  scope :open_tickets, -> { where(closed_at: nil) }
 
-  def close!
-    return true if closed?
-
-    update(closed_at: Time.current)
-  end
-
-  def closed?
-    closed_at.present?
-  end
-
-  def status
-    # return "pending" if agent.present? && closed_at.nil?
-
-    closed? ? "closed" : "open"
-  end
+  scope :recently_closed, -> { where(status: "closed").where(closed_at: 1.month.ago.beginning_of_day..Time.current) }
+  scope :open_tickets,    -> { where.not(status: "closed") }
 
   def agent_comments
-    comments.joins(:user).where(users: { role: "agent" })
+    comments.joins(:user).where(users: { role: User.roles[:agent] })
   end
 
   private

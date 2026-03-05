@@ -1,9 +1,14 @@
 FactoryBot.define do
   factory :export do
     association :agent, factory: [ :user, :agent ]
-    status { 1 }
-    export_type { "closed_tickets" }
+    status { :completed }
+    export_type { "recently_closed_tickets" }
+    filename { "closed_tickets_#{Time.current.strftime('%Y_%m_%d_%H_%M')}.csv" }
     error_message { nil }
+
+    trait :pending do
+      status { :pending }
+    end
 
     trait :with_file do
       after(:create) do |export|

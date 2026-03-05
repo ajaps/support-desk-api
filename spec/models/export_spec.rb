@@ -22,6 +22,32 @@ RSpec.describe Export, type: :model do
       expect(duplicate).not_to be_valid
       expect(duplicate.errors[:base]).to include("Agent already has a pending export")
     end
+
+    it "prevents an agent from exporting more than once within 5 minutes" do
+      create(:export, agent: agent)
+
+      too_soon = build(:export, agent: agent)
+
+      expect(too_soon).not_to be_valid
+      expect(too_soon.errors[:base]).to include("You have recently exported tickets. Please wait before exporting again.")
+    end
+
+    it "allows an export after the cooldown window has passed" do
+      create(:export, agent: agent, created_at: 6.minutes.ago)
+
+      expect(build(:export, agent: agent)).to be_valid
+    end
+
+    it "rejects ticket_array that is not valid JSON" do
+      export = build(:export, agent: agent, ticket_array: "not json{{")
+      expect(export).not_to be_valid
+      expect(export.errors[:ticket_array]).to include("must be valid JSON")
+    end
+
+    it "accepts ticket_array that is valid JSON" do
+      export = build(:export, agent: agent, ticket_array: "[1,2,3]")
+      expect(export).to be_valid
+    end
   end
 
   describe "#presigned_url" do

@@ -1,5 +1,7 @@
 module Types
   class TicketType < BaseObject
+    implements Types::NodeType
+
     connection_type_class Types::BaseConnection
     edge_type_class       Types::BaseEdge
 
@@ -17,7 +19,7 @@ module Types
     field :file_url,    String,      null: true
 
     def comments
-      object.comments.order(created_at: :asc)
+      object.comments.includes(:user).order(created_at: :asc)
     end
 
     def status

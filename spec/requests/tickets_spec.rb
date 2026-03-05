@@ -57,7 +57,7 @@ RSpec.describe "Ticket mutations and queries", type: :request do
 
     it "denies an agent from creating a ticket" do
       result = gql(CREATE_TICKET, variables: { title: "T", description: "D" }, current_user: agent)
-      expect(result.dig("errors")).to be_present
+      expect(result.dig("errors", 0, "message")).to match(/not authorized/i)
     end
 
     it "returns errors for missing title" do

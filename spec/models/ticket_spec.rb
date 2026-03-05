@@ -35,8 +35,8 @@ RSpec.describe Ticket, type: :model do
     end
 
     it ".recently_closed returns tickets closed within 1 month" do
-      recent  = create(:ticket, closed_at: 2.weeks.ago)
-      _old    = create(:ticket, closed_at: 2.months.ago)
+      recent  = create(:ticket, closed_at: 2.weeks.ago, status: "closed")
+      _old    = create(:ticket, closed_at: 2.months.ago, status: "closed")
       expect(Ticket.recently_closed).to contain_exactly(recent)
     end
   end
@@ -115,11 +115,9 @@ RSpec.describe Ticket, type: :model do
       end
     end
 
-    it "is idempotent when called on an already-closed ticket" do
-      ticket.update!(closed_at: 1.hour.ago)
-      original_closed_at = ticket.closed_at
-      ticket.close!
-      expect(ticket.reload.closed_at).to eq(original_closed_at)
+    it "returns false for may_close? when already closed" do
+      ticket.update!(closed_at: 1.hour.ago, status: "closed")
+      expect(ticket.may_close?).to be false
     end
   end
 

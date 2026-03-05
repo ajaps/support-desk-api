@@ -29,12 +29,17 @@ module Types
 
     def tickets(status: nil)
       scope = Pundit.policy_scope!(current_user, Ticket).includes(:customer, :agent)
-      if status&.downcase&.include?("open")
-        scope = scope.where(closed_at: nil)
-      elsif status&.downcase&.include?("close")
-        scope = scope.where.not(closed_at: nil)
+      case status&.downcase
+      when "open"
+        # "open" = all non-closed — keeps stats and UI filters backward-compatible
+        scope = scope.where.not(status: "closed")
+      when "closed"
+        scope = scope.where(status: "closed")
+      when "awaiting_agent"
+        scope = scope.where(status: "awaiting_agent")
+      when "awaiting_customer"
+        scope = scope.where(status: "awaiting_customer")
       end
-
       scope.order(created_at: :desc)
     end
 

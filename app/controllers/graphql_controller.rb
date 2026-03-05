@@ -21,6 +21,8 @@ class GraphqlController < ApplicationController
 
   rescue AuthenticationError => e
     render json: { errors: [ { message: e.message } ] }, status: :unauthorized
+  rescue ArgumentError => e
+    render json: { errors: [ { message: e.message } ] }, status: :bad_request
   rescue StandardError => e
     raise e unless Rails.env.development?
     handle_error_in_development(e)
@@ -28,23 +30,19 @@ class GraphqlController < ApplicationController
 
   private
 
-  # Handle variables in form data, JSON body, or a blank value
+  # Accept only Hash, JSON string, or nil — reject anything else with a 400.
   def prepare_variables(variables_param)
     case variables_param
     when String
-      if variables_param.present?
-        JSON.parse(variables_param) || {}
-      else
-        {}
-      end
+      variables_param.present? ? JSON.parse(variables_param) : {}
     when Hash
       variables_param
     when ActionController::Parameters
-      variables_param.to_unsafe_hash # GraphQL-Ruby will validate name and type of incoming variables.
+      variables_param.to_unsafe_hash
     when nil
       {}
     else
-      raise ArgumentError, "Unexpected parameter: #{variables_param}"
+      raise ArgumentError, "Invalid variables format"
     end
   end
 

@@ -17,14 +17,9 @@ RSpec.describe "Export mutations", type: :request do
   include_examples "requires authentication", EXPORT_CLOSED_TICKETS
 
   context "when a customer calls" do
-    it "returns success: false" do
+    it "returns a not-authorized GraphQL error" do
       result = gql(EXPORT_CLOSED_TICKETS, current_user: customer)
-      expect(result.dig("data", "exportRecentlyClosedTickets", "success")).to be false
-    end
-
-    it "includes an authorization message" do
-      result = gql(EXPORT_CLOSED_TICKETS, current_user: customer)
-      expect(result.dig("data", "exportRecentlyClosedTickets", "message")).to match(/not authorized/i)
+      expect(result.dig("errors", 0, "message")).to match(/not authorized/i)
     end
 
     it "does not create an Export record" do
@@ -58,6 +53,13 @@ RSpec.describe "Export mutations", type: :request do
     it "returns the export id" do
       result = gql(EXPORT_CLOSED_TICKETS, current_user: agent)
       expect(result.dig("data", "exportRecentlyClosedTickets", "id")).to eq(Export.last.id.to_s)
+    end
+
+    it "rejects a second request within the cooldown period" do
+      gql(EXPORT_CLOSED_TICKETS, current_user: agent)
+      result = gql(EXPORT_CLOSED_TICKETS, current_user: agent)
+      expect(result.dig("data", "exportRecentlyClosedTickets", "success")).to be false
+      expect(result.dig("data", "exportRecentlyClosedTickets", "message")).to be_present
     end
   end
 end
