@@ -37,7 +37,7 @@ gem "rack-cors"
 gem "rack-attack"
 
 gem "bcrypt", "~> 3.1"
-gem "jwt", "~> 2.7"
+gem "jwt", "~> 3.1"
 
 gem "graphql"
 gem "graphql-rails_logger", group: :development
